@@ -1,6 +1,6 @@
 # -*- coding:utf8 -*-
 """
-程序在当晚12点前启动,第二天早晨预约2天后的场地	
+程序在当晚 12 点前启动, 第二天早晨预约 2 天后的场地	
 2015-12-23 18:38:05
 xuchen
 """
@@ -33,10 +33,20 @@ class OrderRobot:
 		self.orderday = today + datetime.timedelta(days=3)
 		self.cookie = cookielib.CookieJar()    
 		self.opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookie))
-		self.username = raw_input('username>')
-		self.password = raw_input('password>')
-		self.time = {'6':' 18:00-19:00', '7':' 19:00-20:00', '8':' 20:00-21:00'}
-		self.t = raw_input('starttime: \n6---18:00-19:00 \n7---19:00-20:00 \n8---20:00-21:00\n>')
+		info=[]
+		with open('info.txt') as f:
+			for line in f:
+				info.append(line.split(':')[1].strip('\n'))
+		self.username=info[0]
+		self.password=info[1]
+		self.phone=info[2]
+		self.friendId=info[3]
+		weekday=self.orderday.weekday()+1
+		if weekday==6 or weekday==7:
+			self.t=(info[5])
+		else:
+			self.t=(info[4])
+		self.time = {'5':' 17:00-18:00', '6':' 18:00-19:00', '7':' 19:00-20:00', '8':' 20:00-21:00'}
 		self.starttime = self.time[self.t]
 		self.loginPostdata=urllib.urlencode({    
 			'Login.Token1':self.username,
@@ -44,7 +54,6 @@ class OrderRobot:
 			'goto':'http://myold.seu.edu.cn/loginSuccess.portal',
 			'gotoOnFail':'http://myold.seu.edu.cn/loginFailure.portal'    
 		})  
-		self.friendId = '75496'
 		self.islogin = False
 		
 	def setFriend(self, name):
@@ -76,8 +85,8 @@ class OrderRobot:
 			'orderVO.useTime':self.orderday.strftime(DATEFORMAT_Ymd)+self.starttime,
             'orderVO.itemId':'10',
 			'orderVO.useMode':'2',
-			'useUserIds':'78749',
-			'orderVO.phone':'13736542156',
+			'useUserIds':self.friendId,
+			'orderVO.phone':self.phone,
 			'orderVO.remark':'',
 			'validateCode':validateNum
 		})
@@ -100,10 +109,10 @@ exitTime = datetime.datetime(nextDay.year, nextDay.month, nextDay.day , 8, 4, 0)
 
 myOrderRobot = OrderRobot()
 
-while(now < loginTime):
-	now = datetime.datetime.now()
-	time.sleep(1)
-	print "Login Time: %s Now: %s Target Time: %s" % (loginTime, now, myOrderRobot.orderday)
+# while(now < loginTime):
+# 	now = datetime.datetime.now()
+# 	time.sleep(1)
+# 	print "Login Time: %s Now: %s Target Time: %s" % (loginTime, now, myOrderRobot.orderday)
 
 myOrderRobot.login()
 
@@ -121,5 +130,3 @@ while(not(isSuccess) and now < exitTime):
 		isSuccess = True
 		print 'succcess'
 	time.sleep(1)
-
-
